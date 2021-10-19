@@ -1,0 +1,25 @@
+# ignore editor-specific working files
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+.idea/*
+*~
+*.db
+
+# ignore config
+.env
+
+# ignore lock file until it works with npm < version 5
+package-lock.json
+
+# ignore all compressed files
+*.gz, *.xz, *.zip
+
+# ignore bad file types.  These should never be version-controlled
+*.pdf, *.doc, *.docx, *.odt, *.xls, *.xlsx
+
+# ignore npm/node modules
+node_modules/
+npm-debug.log
+
+yarn-error.log
+*.log

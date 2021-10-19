@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "fs-extra": "^10.0.0",
+    "globby": "^11.0.2",
+    "jsbarcode": "^3.11.5",
+    "lodash.chunk": "^4.2.0",
+    "normalize.css": "^8.0.1",
+    "paper-css": "^0.4.1",
+    "pdf-merge": "^1.2.0",
+    "progress": "^2.0.3",
+    "puppeteer-core": "^10.4.0",
+    "qrcode": "^1.4.4",
+    "tempy": "^0.6.0"
+  },
+  "scripts": {
+    "dist": "node index.js && firefox output/tickets-1-91.pdf"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.1",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0"
+  }
+}
