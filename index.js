@@ -5,14 +5,17 @@ const pdfMerge = require('pdf-merge');
 const Progress = require('progress');
 const tempy = require('tempy');
 const globby = require('globby');
-const util = require('util');
-const exec = util.promisify(require('child_process').exec);
+// const util = require('util');
+// const exec = util.promisify(require('child_process').exec);
+const { customAlphabet } = require('nanoid');
+const { numbers, uppercase } = require('nanoid-dictionary');
+
+const nanoid = customAlphabet(numbers + uppercase, 12);
 
 // globals
-// const TOTAL_NUMBER_OF_TICKETS = 8000000;
 const BATCH_SIZE = 90; // batch size to make
-// const TOTAL_NUMBER_OF_TICKETS = 1000000;
-const TOTAL_NUMBER_OF_TICKETS = 300;
+const TOTAL_NUMBER_OF_TICKETS = 25000;
+// const TOTAL_NUMBER_OF_TICKETS = 180;
 
 const PAGE_SIZE = 30; // size of a page.
 const TEMP_DIR = tempy.directory();
@@ -23,44 +26,53 @@ const jsBarcode = fs.readFileSync('./node_modules/jsbarcode/dist/JsBarcode.all.m
 const template = fs.readFileSync('template.html', 'utf8');
 
 // base64 logos
+/*
 const imaLogo = fs.readFileSync('./lib/ima-logo.jpg').toString('base64');
 const corusLogo = fs.readFileSync('./lib/corus-logo.png').toString('base64');
+*/
 
-async function xzPDF(name) {
-  const cmd = `xz ${name}`;
-  const { stdout, stderr } = await exec(cmd);
-  console.log('stdout:', stdout);
-  console.log('stderr:', stderr);
+const sanity = [];
+
+function genId() {
+  let id = nanoid();
+  while (sanity.includes(id)) {
+    id = nanoid();
+  }
+
+  sanity.push(id);
+
+  return id;
 }
 
-async function makeItem(inventory, lot, expdate) {
+function generateIdentifiers() {
+  console.log('generating identifiers');
+  let i = TOTAL_NUMBER_OF_TICKETS;
+  while (i--) {
+    genId();
+  }
+  console.log(`done generating ${sanity.length} identifiers.  Sorting...`);
+  sanity.sort();
+  console.log('done sorting identifiers');
+}
+
+async function makeItem(ident) {
   // make a data URL out of the QR code.
   // const url = await QR.toDataURL(String(id));
 
-  const ima = `data:image/jpeg;base64,${imaLogo}`;
-  const corus = `data:image/png;base64,${corusLogo}`;
+  // const ima = `data:image/jpeg;base64,${imaLogo}`;
+  // const corus = `data:image/png;base64,${corusLogo}`;
 
   return `
     <div class="label">
-      <div class="label-left">
-        <img src="${corus}" style="height:0.5in; width:auto; margin: 0 auto;">
-      </div>
-
-      <div class="label-right">
-        <span>${inventory} | ${lot} | ${expdate}</span>
-
-        <div>
-          <svg 
-            class="barcode"
-            jsbarcode-format="auto"
-            jsbarcode-width="2"
-            jsbarcode-height="25"
-            jsbarcode-fontsize="8"
-            jsbarcode-value="${lot}"
-            jsbarcode-textmargin="0">
-          </svg>
-        </div>
-      </div>
+      <svg 
+        class="barcode"
+        jsbarcode-format="auto"
+        jsbarcode-width="1"
+        jsbarcode-height="35"
+        jsbarcode-fontsize="8"
+        jsbarcode-value="${ident}"
+        jsbarcode-textmargin="0">
+      </svg>
     </div>
   `;
 }
@@ -74,9 +86,10 @@ function extractNumberFromFileName(fname) {
 
 async function createTemplatesFromRange(start, stop, statusbar) {
   console.log('Creating text templates');
+
   const items = [];
   for (let i = start; i <= stop; i += 1) {
-    items.push(makeItem('F-100', '61208', '30.06.2022'));
+    items.push(makeItem(sanity[i]));
 
     // after chunk is done, let's write it to disk
     if ((i % PAGE_SIZE) === 0) {
@@ -153,10 +166,14 @@ async function makeBatchOfTickets(i, j, statusbar) {
 
 (async () => {
   console.log('Starting PDF generation...');
+
   try {
+    // generate sanity ids
+    generateIdentifiers();
+
     console.log('Starting creating text templates...');
 
-    const statusbar = new Progress('[:bar] :percent :etas', { total: (TOTAL_NUMBER_OF_TICKETS * 2) });
+    const statusbar = new Progress('[:bar] :percent :etas', { total: (TOTAL_NUMBER_OF_TICKETS) });
 
     let i = 1;
     let j = i + BATCH_SIZE;
