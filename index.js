@@ -5,8 +5,8 @@ const pdfMerge = require('pdf-merge');
 const Progress = require('progress');
 const tempy = require('tempy');
 const globby = require('globby');
-// const util = require('util');
-// const exec = util.promisify(require('child_process').exec);
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 const { customAlphabet } = require('nanoid');
 const { numbers, uppercase } = require('nanoid-dictionary');
 
@@ -24,6 +24,8 @@ const normalizeCSS = fs.readFileSync('./node_modules/normalize.css/normalize.css
 const paperCSS = fs.readFileSync('./node_modules/paper-css/paper.min.css', 'utf8');
 const jsBarcode = fs.readFileSync('./node_modules/jsbarcode/dist/JsBarcode.all.min.js', 'utf8');
 const template = fs.readFileSync('template.html', 'utf8');
+
+const LEN = Number(TOTAL_NUMBER_OF_TICKETS).toString().length;
 
 // base64 logos
 /*
@@ -106,6 +108,16 @@ async function createTemplatesFromRange(start, stop, statusbar) {
   }
 }
 
+function leftPad(num, len) {
+  const { length } = Number(num).toString();
+
+  if (length < len) {
+    return '0'.repeat(len - length).concat(num);
+  }
+
+  return num;
+}
+
 async function renderTemplatesFromRange(i, j, statusbar) {
   const files = [];
   const globs = await globby(`${TEMP_DIR}/chunks*.txt`);
@@ -143,7 +155,7 @@ async function renderTemplatesFromRange(i, j, statusbar) {
   await browser.close();
 
   console.log('Consolidating all paths into a single path.');
-  const fname = `output/tickets-${i}-${j}.pdf`;
+  const fname = `output/${leftPad(i, LEN)}-${leftPad(j, LEN)}-tickets.pdf`;
   await pdfMerge(files, { output: fname });
 
   console.log(`Zipping PDFs into ${fname}.xz`);
@@ -151,7 +163,7 @@ async function renderTemplatesFromRange(i, j, statusbar) {
 
   // delete all .txt files
   console.log(`Deleting ${globs.length} txt files`);
-  // await Promise.all(globs.map((path) => fse.unlink(path)));
+  await Promise.all(globs.map((path) => fse.unlink(path)));
 
   // delete all .pdf files
   console.log(`Deleting ${files.length} pdf files`);
@@ -173,7 +185,7 @@ async function makeBatchOfTickets(i, j, statusbar) {
 
     console.log('Starting creating text templates...');
 
-    const statusbar = new Progress('[:bar] :percent :etas', { total: (TOTAL_NUMBER_OF_TICKETS) });
+    const statusbar = new Progress('[:bar] :percent :etas', { total: (TOTAL_NUMBER_OF_TICKETS * 1.9) });
 
     let i = 1;
     let j = i + BATCH_SIZE;
@@ -182,6 +194,15 @@ async function makeBatchOfTickets(i, j, statusbar) {
       i += BATCH_SIZE;
       j = i + BATCH_SIZE;
     }
+
+    console.log('merging files with pdftk');
+
+    const { stdout, stderr } = await exec('pdftk output/*.pdf cat output tickets.pdf');
+
+    if (stderr) {
+      console.error(`error: ${stderr}`);
+    }
+    console.log(`Number of files ${stdout}`);
 
     console.log('Done!');
   } catch (e) {
