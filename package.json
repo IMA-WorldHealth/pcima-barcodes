@@ -15,7 +15,7 @@
     "tempy": "^0.6.0"
   },
   "scripts": {
-    "dist": "node index.js && firefox output/tickets-1-91.pdf"
+    "dist": "rm output/*.pdf && node index.js && evince tickets.pdf"
   },
   "devDependencies": {
     "eslint": "^8.0.1",

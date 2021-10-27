@@ -14,8 +14,8 @@ const nanoid = customAlphabet(numbers + uppercase, 12);
 
 // globals
 const BATCH_SIZE = 90; // batch size to make
-const TOTAL_NUMBER_OF_TICKETS = 25000;
-// const TOTAL_NUMBER_OF_TICKETS = 180;
+// const TOTAL_NUMBER_OF_TICKETS = 25000;
+const TOTAL_NUMBER_OF_TICKETS = 90;
 
 const PAGE_SIZE = 30; // size of a page.
 const TEMP_DIR = tempy.directory();
@@ -203,6 +203,9 @@ async function makeBatchOfTickets(i, j, statusbar) {
       console.error(`error: ${stderr}`);
     }
     console.log(`Number of files ${stdout}`);
+
+    console.log('Writing identifiers out to a CSV file..');
+    await fs.promises.writeFile('identifiers.csv', 'uuid\n'.concat(sanity.join('\n')), 'utf8');
 
     console.log('Done!');
   } catch (e) {
