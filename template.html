@@ -13,6 +13,7 @@
     INJECT_JSBARCODE
   </script>
   <style>
+
     .sheet {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -21,22 +22,16 @@
       padding:0;
       margin-left:auto;
       margin-right:auto;
-      row-gap: 3mm;
-      column-gap: 6mm;
+      row-gap: 0.3cm;
+      column-gap: 0.25cm;
     }
 
     .label {
+      height: 1in;
       display: flex;
       justify-content: center;
       align-items: center;
-    }
-
-
-    .label-right {
-      display: flex;
-      flex-flow: column wrap;
-      justify-content: center;
-      align-items: center;
+        box-sizing: border-box;
     }
 
     @page {

@@ -14,8 +14,8 @@ const nanoid = customAlphabet(numbers + uppercase, 12);
 
 // globals
 const BATCH_SIZE = 90; // batch size to make
-// const TOTAL_NUMBER_OF_TICKETS = 25000;
-const TOTAL_NUMBER_OF_TICKETS = 90;
+const TOTAL_NUMBER_OF_TICKETS = 25000;
+// const TOTAL_NUMBER_OF_TICKETS = 90;
 
 const PAGE_SIZE = 30; // size of a page.
 const TEMP_DIR = tempy.directory();
@@ -70,8 +70,8 @@ async function makeItem(ident) {
         class="barcode"
         jsbarcode-format="auto"
         jsbarcode-width="1"
-        jsbarcode-height="35"
-        jsbarcode-fontsize="8"
+        jsbarcode-height="40"
+        jsbarcode-fontsize="12"
         jsbarcode-value="${ident}"
         jsbarcode-textmargin="0">
       </svg>
